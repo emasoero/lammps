@@ -13,7 +13,7 @@
 
 #ifdef MINIMIZE_CLASS
 
-MinimizeStyle(quickmin,MinMaske)
+MinimizeStyle(maske,MinMaske)
 
 #else
 
