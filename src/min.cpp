@@ -73,6 +73,8 @@ Min::Min(LAMMPS *lmp) : Pointers(lmp)
   external_force_clear = 0;
 
   kokkosable = 0;
+
+  hcx = hcy = hcz = 0; // USER-MASKE
 }
 
 /* ---------------------------------------------------------------------- */
@@ -654,9 +656,12 @@ void Min::modify_params(int narg, char **arg)
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"dmax") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
+      if (iarg+5 > narg) error->all(FLERR,"Illegal min_modify command");
       dmax = force->numeric(FLERR,arg[iarg+1]);
-      iarg += 2;
+      hcx = force->numeric(FLERR,arg[iarg+2]); // USER-MASKE
+      hcy = force->numeric(FLERR,arg[iarg+3]); // USER-MASKE
+      hcz = force->numeric(FLERR,arg[iarg+4]); // USER-MASKE
+      iarg += 5;
     } else if (strcmp(arg[iarg],"line") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal min_modify command");
       if (strcmp(arg[iarg+1],"backtrack") == 0) linestyle = 0;

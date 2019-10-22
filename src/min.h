@@ -110,6 +110,8 @@ class Min : protected Pointers {
 
   int kokkosable;             // 1 if this min style supports Kokkos
 
+  double hcx, hcy, hcz;       // USER-MASKE
+  
   int neigh_every,neigh_delay,neigh_dist_check;  // neighboring params
 
   virtual double energy_force(int);
