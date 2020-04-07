@@ -50,9 +50,6 @@ void MinMaske::setup_style()
 {
   double **v = atom->v;
   int nlocal = atom->nlocal;
-
-  for (int i = 0; i < nlocal; i++)
-    v[i][0] = v[i][1] = v[i][2] = 0.0;
 }
 
 /* ----------------------------------------------------------------------
@@ -93,44 +90,17 @@ int MinMaske::iterate(int maxiter)
     // zero velocity if anti-parallel to force
     // else project velocity in direction of force
 
-    double **v = atom->v;
     double **f = atom->f;
     int nlocal = atom->nlocal;
 
-    vdotf = 0.0;
-    for (int i = 0; i < nlocal; i++)
-      vdotf += v[i][0]*f[i][0] + v[i][1]*f[i][1] + v[i][2]*f[i][2];
-    MPI_Allreduce(&vdotf,&vdotfall,1,MPI_DOUBLE,MPI_SUM,world);
 
     // Euler integration step
 
     double **x = atom->x;
-
     for (int i = 0; i < nlocal; i++) {
-      if(f[i][0] > 0.0 && v[i][0] < hcx-dmax) {
-	x[i][0] += dmax;
-	v[i][0] += dmax;
-      }
-      if(f[i][1] > 0.0 && v[i][1] < hcy-dmax) {
-	x[i][1] += dmax;
-	v[i][1] += dmax;
-      }
-      if(f[i][2] > 0.0 && v[i][2] < hcz-dmax) {
-	x[i][2] += dmax;
-	v[i][2] += dmax;
-      }
-                  
-      if(f[i][0] < 0.0 && v[i][0] > -hcx+dmax) {
-	x[i][0] -= dmax;
-	v[i][0] -= dmax;
-      }
-      if(f[i][1] < 0.0 && v[i][1] > -hcy+dmax) {
-	x[i][1] -= dmax;
-	v[i][1] -= dmax;
-      }
-      if(f[i][2] < 0.0 && v[i][2] > -hcz+dmax) {
-	x[i][2] -= dmax;
-	v[i][2] -= dmax;
+      for (int d = 0; d < 3; d++) {
+	if (f[i][d] > 0) x[i][d] += dmax;
+	if (f[i][d] < 0) x[i][d] -= dmax;
       }
     }
 
