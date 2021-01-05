@@ -33,9 +33,10 @@ BaseEllipsoidT::BaseEllipsoid() : _compiled(false), _max_bytes(0) {
   device=&global_device;
   ans=new Answer<numtyp,acctyp>();
   nbor=new Neighbor();
-  nbor_program=NULL;
-  ellipsoid_program=NULL;
-  lj_program=NULL;
+  nbor_program=nullptr;
+  ellipsoid_program=nullptr;
+  lj_program=nullptr;
+  ucl_device=nullptr;
 }
 
 template <class numtyp, class acctyp>
@@ -92,7 +93,9 @@ int BaseEllipsoidT::init_base(const int nlocal, const int nall,
                   max_nbors,cell_size,true,1);
   if (success!=0)
     return success;
-  
+
+  if (ucl_device!=device->gpu) _compiled=false;
+
   ucl_device=device->gpu;
   atom=&device->atom;
 
@@ -353,7 +356,7 @@ int* BaseEllipsoidT::compute(const int f_ago, const int inum_full,
   if (inum_full==0) {
     host_start=0;
     zero_timers();
-    return NULL;
+    return nullptr;
   }
 
   int ago=hd_balancer.ago_first(f_ago);
@@ -366,7 +369,7 @@ int* BaseEllipsoidT::compute(const int f_ago, const int inum_full,
     reset_nbors(nall, inum, inum_full, ilist, numj, host_type, firstneigh,
                 success);
     if (!success)
-      return NULL;
+      return nullptr;
   }
   int *list;
   if (_multiple_forms)
@@ -403,7 +406,7 @@ int** BaseEllipsoidT::compute(const int ago, const int inum_full, const int nall
   if (inum_full==0) {
     host_start=0;
     zero_timers();
-    return NULL;
+    return nullptr;
   }
 
   hd_balancer.balance(cpu_time);
@@ -417,7 +420,7 @@ int** BaseEllipsoidT::compute(const int ago, const int inum_full, const int nall
     build_nbor_list(inum, inum_full-inum, nall, host_x, host_type,
                     sublo, subhi, tag, nspecial, special, success);
     if (!success)
-      return NULL;
+      return nullptr;
     atom->cast_quat_data(host_quat[0]);
     hd_balancer.start_timer();
   } else {

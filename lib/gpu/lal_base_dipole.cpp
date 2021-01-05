@@ -25,16 +25,17 @@ BaseDipoleT::BaseDipole() : _compiled(false), _max_bytes(0) {
   device=&global_device;
   ans=new Answer<numtyp,acctyp>();
   nbor=new Neighbor();
-  pair_program=NULL;
+  pair_program=nullptr;
+  ucl_device=nullptr;
 }
 
 template <class numtyp, class acctyp>
 BaseDipoleT::~BaseDipole() {
   delete ans;
   delete nbor;
-  if (pair_program) delete pair_program;
   k_pair_fast.clear();
   k_pair.clear();
+  if (pair_program) delete pair_program;
 }
 
 template <class numtyp, class acctyp>
@@ -78,6 +79,8 @@ int BaseDipoleT::init_atomic(const int nlocal, const int nall,
                   max_nbors,cell_size,false,_threads_per_atom);
   if (success!=0)
     return success;
+
+  if (ucl_device!=device->gpu) _compiled=false;
 
   ucl_device=device->gpu;
   atom=&device->atom;
@@ -136,7 +139,7 @@ int * BaseDipoleT::reset_nbors(const int nall, const int inum, int *ilist,
   resize_atom(inum,nall,success);
   resize_local(inum,mn,success);
   if (!success)
-    return NULL;
+    return nullptr;
 
   nbor->get_host(inum,ilist,numj,firstneigh,block_size());
 
@@ -242,7 +245,7 @@ int** BaseDipoleT::compute(const int ago, const int inum_full,
     // Make sure textures are correct if realloc by a different hybrid style
     resize_atom(0,nall,success);
     zero_timers();
-    return NULL;
+    return nullptr;
   }
 
   hd_balancer.balance(cpu_time);
@@ -255,7 +258,7 @@ int** BaseDipoleT::compute(const int ago, const int inum_full,
     build_nbor_list(inum, inum_full-inum, nall, host_x, host_type,
                     sublo, subhi, tag, nspecial, special, success);
     if (!success)
-      return NULL;
+      return nullptr;
     atom->cast_q_data(host_q);
     atom->cast_quat_data(host_mu[0]);
     hd_balancer.start_timer();
